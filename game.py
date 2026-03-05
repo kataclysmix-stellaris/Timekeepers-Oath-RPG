@@ -288,6 +288,7 @@ def game():
                 # Respawn with corpse marker
                 respawn_area = collapse_loop(state, player, current_room)
                 current_room = respawn_area
+                continue
         
         print("Options:", ", ".join(room["options"].keys()))
         print("[S]ave [I]nspect [Q]uit")
