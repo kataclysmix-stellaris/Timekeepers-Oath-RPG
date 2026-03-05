@@ -250,13 +250,13 @@ def game():
         elif not state:
             state = game_state
         elif not current_room:
-            current_room = "forest"
+            current_room = "river"
         elif not rooms:
             rooms = copy.deepcopy(BASE_ROOMS)
     else:
         player = new_player()
         state = game_state
-        current_room = "forest"
+        current_room = "river"
         rooms = copy.deepcopy(BASE_ROOMS)
 
     while True:
