@@ -151,9 +151,9 @@ def collapse_loop(state, player, room):
 
     return "town"
 
-'''----------------------------
+"""----------------------------
 SAVE / LOAD
-----------------------------'''
+----------------------------"""
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SAVE_PATH = os.path.join(BASE_DIR, "savegame.json")
@@ -269,14 +269,10 @@ def game():
             if room["item"] == "Broken Clock" and state["last_loop_cache"]:
                 print("You find a broken clock.")
                 print("It feels familiar.")
-
                 recovered = state["last_loop_cache"]
-
-                player["inventory"].extend(recovered["inventory"])
-                state["watch_pieces"].extend(recovered["watch_pieces"])
-
+                player["inventory"].append(recovered["inventory"])
+                state["watch_pieces"].append(recovered["watch_pieces"])
                 print("You reclaim what was lost.")
-
                 state["last_loop_cache"] = None
 
             else:
@@ -290,8 +286,8 @@ def game():
             survived = combat(player, boss, state, current_room)
             if not survived:
                 # Respawn with corpse marker
-                respawn = collapse_loop(state, player, current_room)
-                current_room = respawn
+                respawn_area = collapse_loop(state, player, current_room)
+                current_room = respawn_area
         
         print("Options:", ", ".join(room["options"].keys()))
         print("[S]ave [I]nspect [Q]uit")
