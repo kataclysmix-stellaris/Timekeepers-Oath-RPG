@@ -56,9 +56,9 @@ BASE_ROOMS = {
     }
 }
 
-# ----------------------------
-# PLAYER SETUP
-# ----------------------------
+'''----------------------------
+PLAYER SETUP
+----------------------------'''
 
 def new_player():
     return {
@@ -69,9 +69,9 @@ def new_player():
         "inventory": []
     }
 
-# ----------------------------
-# GAME STATE
-# ----------------------------
+'''----------------------------
+GAME STATE
+----------------------------'''
 
 game_state = {
     "hour": 0,
@@ -79,7 +79,7 @@ game_state = {
     "base_loop_length": 24,
     "current_loop_length": 24,
     "watch_pieces": [],
-    "last_loop_cache": {}
+    "last_loop_cache": None
 }
 
 def advance_time(state, player, room):
@@ -151,9 +151,9 @@ def collapse_loop(state, player, room):
 
     return "town"
 
-# ----------------------------
-# SAVE / LOAD
-# ----------------------------
+'''----------------------------
+SAVE / LOAD
+----------------------------'''
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SAVE_PATH = os.path.join(BASE_DIR, "savegame.json")
@@ -180,9 +180,9 @@ def load_game():
         return data["player"], data["current_room"], data["state"], data["rooms"]
     return None, None, None, None
 
-# ----------------------------
-# COMBAT SYSTEM
-# ----------------------------
+'''----------------------------
+COMBAT SYSTEM
+----------------------------'''
 
 def combat(player, boss, state, room):
     print(f"\nYou face {boss['name']} — embodiment of {boss['fear']}.\n")
@@ -211,7 +211,7 @@ def combat(player, boss, state, room):
             print("You freeze up in fear.")
             continue
 
-        # Night buff for darkness fear
+        #Night buff for darkness fear
         if boss["fear"] == "darkness" and (state["hour"] >= 20 or state["hour"] < 6):
             enemy_damage = random.randint(4, boss["attack"] + 3)
         else:
@@ -234,9 +234,9 @@ def combat(player, boss, state, room):
         print("You obtained:", boss["watch_piece"])
         return True
 
-# ----------------------------
-# GAME LOOP
-# ----------------------------
+'''----------------------------
+GAME LOOP
+----------------------------'''
 
 def game():
     print("1) New Game")
@@ -289,7 +289,9 @@ def game():
             boss = room["boss"].copy()
             survived = combat(player, boss, state, current_room)
             if not survived:
-                current_room = collapse_loop(state, player, current_room)
+                # Respawn with corpse marker
+                respawn = collapse_loop(state, player, current_room)
+                current_room = respawn
         
         print("Options:", ", ".join(room["options"].keys()))
         print("[S]ave [I]nspect [Q]uit")
@@ -311,7 +313,7 @@ def game():
         else:
             print("You can't do that right now.")
 
-# ----------------------------
+'''----------------------------'''
 
 if __name__ == "__main__":
     game()
