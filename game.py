@@ -292,7 +292,7 @@ def game():
                 current_room = collapse_loop(state, player, current_room)
         
         print("Options:", ", ".join(room["options"].keys()))
-        print("[S]ave  [Q]uit")
+        print("[S]ave [I]nspect [Q]uit")
 
         command = input("> ").lower()
 
