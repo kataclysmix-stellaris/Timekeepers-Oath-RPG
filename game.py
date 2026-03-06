@@ -264,6 +264,10 @@ def game():
         print(room["description"])
         print(f"Current Time: {state['hour']}:00")
         print("Watch Pieces:", state["watch_pieces"])
+        
+        if state["last_loop_cache"]:
+            drop_room = state["last_loop_cache"]["room"]
+            rooms[drop_room]["item"] = "Broken Clock"
 
         if "item" in room:
             if room["item"] == "Broken Clock" and state["last_loop_cache"]:
