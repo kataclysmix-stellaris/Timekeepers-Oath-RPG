@@ -141,15 +141,17 @@ def collapse_loop(state, player, room):
         "watch_pieces": state["watch_pieces"].copy()
     }
 
-    between_space(player, state)
+    if len(state["watch_pieces"]) != 3:
+        between_space(player, state)
 
-    player["inventory"] = []
-    state["watch_pieces"] = []
-    state["hour"] = 0
+        player["inventory"] = []
+        state["watch_pieces"] = []
+        state["hour"] = 0
     
-    print("You wake up in town with one heck of a headache and your stuff gone.")
-
-    return "town"
+        print("You wake up in town with one heck of a headache and your stuff gone.")
+        return "town"
+    else:
+        autophobia(player, state)
 
 """----------------------------
 SAVE / LOAD
@@ -202,8 +204,9 @@ def combat(player, boss, state, room):
             if "Broken Clock" in player["inventory"]:
                 heal = 10
                 player["hp"] = min(player["hp"] + heal, player["max_hp"])
-                state["hour"] -= 2
-                print("You used the Broken Clock! Time went back an hour!")
+                rewind = 1 + len(state["watch_pieces"])
+                state["hour"] -= (rewind + 1)
+                print(f"You used the Runtime Clock! Time went back by {rewind} hours!")
             else:
                 print("You don't have anything to rewind!")
 
@@ -231,9 +234,11 @@ def combat(player, boss, state, room):
         print(f"You defeated {boss['name']}!")
         state["watch_pieces"].append(boss["watch_piece"])
         print("You obtained:", boss["watch_piece"])
-        del room[boss]
+        del room["boss"]
         del boss
         return True
+
+
 
 '''----------------------------
 GAME LOOP
