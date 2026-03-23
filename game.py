@@ -229,9 +229,9 @@ def combat(player, boss, state, room):
         return False
     else:
         print(f"You defeated {boss['name']}!")
-        del room["boss"]
         state["watch_pieces"].append(boss["watch_piece"])
         print("You obtained:", boss["watch_piece"])
+        del boss
         return True
 
 '''----------------------------
