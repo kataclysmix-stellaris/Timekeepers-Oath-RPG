@@ -2,6 +2,7 @@ import json
 import random
 import os
 import copy
+from time import sleep
 
 ''' ----------------------------
 WORLD DATA
@@ -79,7 +80,8 @@ game_state = {
     "base_loop_length": 24,
     "current_loop_length": 24,
     "watch_pieces": [],
-    "last_loop_cache": None
+    "last_loop_cache": None,
+    "instability": 0
 }
 
 def advance_time(state, player, room):
@@ -90,6 +92,92 @@ def advance_time(state, player, room):
         return True
 
     return False
+
+def get_intensity(state):
+    return min(0.2 + state["instability"] * 0.15, 0.9)
+
+def get_break_chance(state):
+    return min(0.1 + state["instability"] * 0.1, 0.8)
+
+def break_text(text, break_chance=0.3):
+    result = ""
+
+    for word in text.split():
+        if random.random() < break_chance and len(word) > 2:
+            split_point = random.randint(1, len(word) - 1)
+
+            part1 = word[:split_point]
+            part2 = word[split_point:]
+
+            # Add a stutter or break
+            broken = f"{part1}— {part1}{part2}"
+            result += broken + " "
+        else:
+            result += word + " "
+
+    return result.strip()
+
+def panic_text(text, intensity=0.5):
+    result = ""
+
+    for char in text:
+        if char.isalpha() and random.random() < intensity:
+            result += char.upper()
+        else:
+            result += char.lower()
+
+    return result
+
+def dynamic_panic(text):
+    attempts = get_intensity
+
+    # cap intensity so it doesn't go insane
+    intensity = min(0.2 + (attempts * 0.2), 0.9)
+
+    return panic_text(text, intensity)
+
+def panic_words(text, intensity=0.5):
+    words = text.split()
+
+    result = []
+    for word in words:
+        if random.random() < intensity:
+            result.append(word.upper())
+        else:
+            result.append(word.lower())
+
+    return " ".join(result)
+
+def panic_break_text(text):
+    attempts = get_intensity
+
+    intensity = min(0.2 + attempts * 0.2, 0.9)
+    break_chance = min(0.2 + attempts * 0.2, 0.8)
+
+    broken = break_text(text, break_chance)
+    return panic_text(broken, intensity)
+
+def cut_text(text, cut_chance=0.2):
+    if random.random() < cut_chance:
+        cut_point = random.randint(1, len(text))
+        return text[:cut_point] + "—"
+    return text
+
+def full_panic_line(text, state):
+    intensity = get_intensity(state)
+    break_chance = get_break_chance(state)
+
+    text = break_text(text, break_chance)
+    text = cut_text(text, 0.2)
+    text = panic_text(text, intensity)
+
+    return text
+
+def alone_pause(state):
+    base = 1
+    reduction = 0.5 ** state["instability"]
+    print(panic_text("\nYou're alone", (base * reduction)))
+    sleep(max(base * reduction, 0.1))
 
 def between_space(player, state):
     print("\nYou stand in a place without walls.")
@@ -114,11 +202,13 @@ def between_space(player, state):
             break
         elif choice == "2":
             player["max_hp"] += 10
+            state["instability"] -= 2
             print('"Then I will hold you together a little better."')
             print('"Exercise more caution, the body needs time to heal."')
             break
         elif choice == "3":
             state["current_loop_length"] += 2
+            state["instability"] -= 10
             print('"I can delay the collapse… but only slightly."')
             print('"Be careful this time, please."')
             break
@@ -127,12 +217,62 @@ def between_space(player, state):
             break
         else:
             print('"That is not what you truly need."')
+            
+# Error Handling
+def load_file(file_name, state=None, glitch=False):
+    print(f"\nLoading '{file_name}'...")
+    sleep(1.5)
+
+    # Optional glitch behavior
+    if glitch:
+        glitch_text(file_name)
+        return False
+
+    print("Status: OK")
+    sleep(1)
+    return True
+
+def file_error(file_name, error_type="not_found"):
+    sleep(1)
+
+    print("\nTraceback (most recent call last):")
+    sleep(1)
+
+    print(f'  File "runtime_loader.py", line 86')
+    sleep(1)
+
+    if error_type == "not_found":
+        print(f"FileNotFoundError: '{file_name}'")
+
+    elif error_type == "corrupt":
+        print(f"Error: '{file_name}' is corrupted")
+
+    elif error_type == "conflict":
+        print(f"Error: duplicate entity detected for '{file_name}'")
+
+    sleep(2)
+
+def glitch_text(text):
+    corrupted = ""
+
+    for char in text:
+        if random.random() < 0.2:
+            corrupted += random.choice(["?", "#", "%"])
+        else:
+            corrupted += char
+
+    print(f"Loading '{corrupted}'...")
+    sleep(1)
+
+    print("Status: ???")
+    sleep(2)
 
 def collapse_loop(state, player, room):
     print("\nReality seems to unravel.")
     print("The loop resets once more.\n")
     
     state["resets"] += 1
+    state["instability"] += 2
     state["current_loop_length"] = int(state["base_loop_length"] * 0.85)
     
     state["last_loop_cache"] = {
@@ -205,7 +345,7 @@ def combat(player, boss, state, room):
                 heal = 10
                 player["hp"] = min(player["hp"] + heal, player["max_hp"])
                 rewind = 1 + len(state["watch_pieces"])
-                state["hour"] -= (rewind + 1)
+                state["hour"] = max(0, (state["hour"] - (rewind + 1)))
                 print(f"You used the Runtime Clock! Time went back by {rewind} hours!")
             else:
                 print("You don't have anything to rewind!")
@@ -238,7 +378,18 @@ def combat(player, boss, state, room):
         del boss
         return True
 
-
+def autophobia(player, state):
+    print("\n...you find yourself in the empty space again.")
+    sleep(2)
+    print("...but she's not there.")
+    alone_pause(state)
+    print("...")
+    sleep(1)
+    if state["resets"] >= 10:
+        print("Why do you keep having me go to her?")
+        sleep(1)
+    print("I don't understand...")
+    
 
 '''----------------------------
 GAME LOOP
@@ -293,7 +444,7 @@ def game():
 
         if "boss" in room:
             boss = room["boss"].copy()
-            survived = combat(player, boss, state, current_room)
+            survived = combat(player, boss, state, room)
             if not survived:
                 # Respawn with corpse marker
                 respawn_area = collapse_loop(state, player, current_room)
