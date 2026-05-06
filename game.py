@@ -318,9 +318,20 @@ def load_game():
     if os.path.exists("savegame.json"):
         with open("savegame.json", "r") as f:
             data = json.load(f)
+        if not data.get("player"):
+            data["player"] = new_player()
+        if not data.get("state"):
+            data["state"] = game_state
+        if not data.get("current_room"):
+            data["current_room"] = "river"
+        if not data.get("rooms"):
+            data["rooms"] = copy.deepcopy(BASE_ROOMS)
         print("Game loaded.\n")
         return data["player"], data["current_room"], data["state"], data["rooms"]
-    return None, None, None, None
+        
+def clear_screen():
+    # Clears the screen and moves cursor to the top-left
+    print("\033[H\033[J", end="")
 
 '''----------------------------
 COMBAT SYSTEM
@@ -389,7 +400,59 @@ def autophobia(player, state):
         print("Why do you keep having me go to her?")
         sleep(1)
     print("I don't understand...")
+    self_fight(player, state)
     
+def self_fight(player, state):
+    print("\n")
+    print("\n")
+    print("\n")
+    print(f"\n'What's the matter, {player['name']}?'")
+    print("The figure looks just like you, but twisted by fear and despair.\n")
+
+    shadow = {
+        "name": "Monophobia",
+    }
+
+    while player["hp"] > 0:
+        print(f"Time: {state['hour']}:00")
+        print(f"Timekeeper HP: {player['hp']}")
+        print(f"{shadow['name']} HP: {player['hp']}")
+        action = input("[At]tack, [Ac]cept, or [R]ewind? ").lower()
+
+        if action == "a":
+            damage = random.randint(1, player["attack"])
+            player["hp"] -= damage
+            print(f"You deal {damage} damage!")
+            state["instability"] += damage // 2
+
+        elif action == "r":
+            if "Broken Clock" in player["inventory"]:
+                heal = 10
+                player["hp"] = min(player["hp"] + heal, player["max_hp"])
+                rewind = 1 + len(state["watch_pieces"])
+                state["hour"] = max(0, (state["hour"] - (rewind + 1)))
+                print(f"You used the Runtime Clock! Time went back by {rewind} hours!")
+            else:
+                print("You don't have anything to rewind!")
+
+        else:
+            print("You hesitate, paralyzed by self-doubt.")
+            continue
+
+        if player["hp"] > 0:
+            if state["instability"] >= 5:
+                print ("'Why are you hurting yourself?'")
+        sleep(1)
+        clear_screen()
+        
+    file_error("Timekeeper.chr", "conflict")
+    file_error("savegame.json", "corrupt")
+    print('\n"Try again, Timekeeper."')
+    print('"...but be a little nicer to yourself this time."')
+    print('"I know you can do it."')
+    print('"They\'re just as scared of you as you are of them."')
+    print('"Baby steps, okay?"')
+    player["hp"] = player["max_hp"]
 
 '''----------------------------
 GAME LOOP
