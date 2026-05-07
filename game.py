@@ -323,7 +323,7 @@ def load_game():
             data["player"] = new_player()
         if not data.get("state") or KeyError in data["state"]:
             data["state"] = game_state
-        if not data.get("current_room") or KeyError in data["current_room"]:
+        if not data.get("current_room"):
             data["current_room"] = "river"
         if not data.get("rooms") or KeyError in data["rooms"]:
             data["rooms"] = copy.deepcopy(BASE_ROOMS)
