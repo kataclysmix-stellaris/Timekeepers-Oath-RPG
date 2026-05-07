@@ -178,6 +178,7 @@ def alone_pause(state):
     reduction = 0.5 ** state["instability"]
     print(panic_text("\nYou're alone", (base * reduction)))
     sleep(max(base * reduction, 0.1))
+    clear_screen()
 
 def between_space(player, state):
     print("\nYou stand in a place without walls.")
@@ -318,13 +319,13 @@ def load_game():
     if os.path.exists("savegame.json"):
         with open("savegame.json", "r") as f:
             data = json.load(f)
-        if not data.get("player"):
+        if not data.get("player") or KeyError in data["player"]:
             data["player"] = new_player()
-        if not data.get("state"):
+        if not data.get("state") or KeyError in data["state"]:
             data["state"] = game_state
-        if not data.get("current_room"):
+        if not data.get("current_room") or KeyError in data["current_room"]:
             data["current_room"] = "river"
-        if not data.get("rooms"):
+        if not data.get("rooms") or KeyError in data["rooms"]:
             data["rooms"] = copy.deepcopy(BASE_ROOMS)
         print("Game loaded.\n")
         return data["player"], data["current_room"], data["state"], data["rooms"]
@@ -390,61 +391,83 @@ def combat(player, boss, state, room):
         return True
 
 def autophobia(player, state):
-    print("\n...you find yourself in the empty space again.")
+    print("\n...I find myself in the empty space again.")
+    clear_screen()
     sleep(2)
     print("...but she's not there.")
+    clear_screen()
     alone_pause(state)
+    clear_screen()
     print("...")
     sleep(1)
     if state["resets"] >= 10:
+        clear_screen()
         print("Why do you keep having me go to her?")
         sleep(1)
+    clear_screen()
     print("I don't understand...")
+    clear_screen()
+    sleep(5)
+    print(f"\n'What's the matter, {player['name']}?'")
+    print("The figure looks just like me, but twisted by fear and despair.\n")
     self_fight(player, state)
     
 def self_fight(player, state):
-    print("\n")
-    print("\n")
-    print("\n")
-    print(f"\n'What's the matter, {player['name']}?'")
-    print("The figure looks just like you, but twisted by fear and despair.\n")
 
     shadow = {
         "name": "Monophobia",
     }
-
+    accept_attempts = 0
+    acceptance = False
     while player["hp"] > 0:
         print(f"Time: {state['hour']}:00")
         print(f"Timekeeper HP: {player['hp']}")
-        print(f"{shadow['name']} HP: {player['hp']}")
-        action = input("[At]tack, [Ac]cept, or [R]ewind? ").lower()
+        print(f"{shadow['name']} HP: {player['max_hp']}")
+        action = input(f"[A]ttack or [C]onfront? ").lower()
 
         if action == "a":
             damage = random.randint(1, player["attack"])
             player["hp"] -= damage
-            print(f"You deal {damage} damage!")
+            print(f"I deal {damage} damage! But it feels like I'm hurting myself.")
             state["instability"] += damage // 2
-
+        elif action == "c":
+            print("I take a deep breath and try to accept my fears.")
+            player["hp"] = min(player["hp"] + 5, player["max_hp"])
+            state["instability"] = max(0, state["instability"] - 8)
+            accept_attempts += 1
+            if acceptance:
+                print("You hold out your hand to the shadow, and it hesitantly takes it.")
+                print("It becomes a part of you. You feel whole for the first time in a long time.")
+            elif accept_attempts == 1:
+                print("I feel a slight improvement in my mental state.")
+                print("'What are you doing?'")
+            elif accept_attempts == 2:
+                print("I feel more at peace, but the shadow looks furious.")
+                print("'You're supposed to be scared of me!'")
+            elif accept_attempts == 3:
+                print("I feel a significant improvement in my mental state.")
+                print("'Why are you doing this to yourself?'")
+            elif accept_attempts == 4:
+                print("I feel a profound improvement in my mental state.")
+                print("'...what's wrong with you?'")
+            elif accept_attempts >= 5:
+                print("The shadow seems to shrink and weaken.")
+                print("'I... I don't understand. Why aren't you afraid of me?'")
+                acceptance = True
         elif action == "r":
-            if "Broken Clock" in player["inventory"]:
-                heal = 10
-                player["hp"] = min(player["hp"] + heal, player["max_hp"])
-                rewind = 1 + len(state["watch_pieces"])
-                state["hour"] = max(0, (state["hour"] - (rewind + 1)))
-                print(f"You used the Runtime Clock! Time went back by {rewind} hours!")
-            else:
-                print("You don't have anything to rewind!")
-
-        else:
-            print("You hesitate, paralyzed by self-doubt.")
+            print("The clock doesn't work here. No matter how much I want to go back, I can't.")
+            print("'Time doesn't flow the same way here. Nice try, though.'")
             continue
-
-        if player["hp"] > 0:
-            if state["instability"] >= 5:
-                print ("'Why are you hurting yourself?'")
+        else:
+            print("I hesitate, paralyzed by self-doubt.")
+            continue
+        
         sleep(1)
         clear_screen()
+        if player["hp"] <= 0:
+            creator_encouragement(player, state)
         
+def creator_encouragement(player, state):
     file_error("Timekeeper.chr", "conflict")
     file_error("savegame.json", "corrupt")
     print('\n"Try again, Timekeeper."')
@@ -453,6 +476,7 @@ def self_fight(player, state):
     print('"They\'re just as scared of you as you are of them."')
     print('"Baby steps, okay?"')
     player["hp"] = player["max_hp"]
+    self_fight(player, state)
 
 '''----------------------------
 GAME LOOP
