@@ -1,3 +1,4 @@
+from sys import exit
 import json
 import random
 import os
@@ -175,11 +176,14 @@ def full_panic_line(text, state):
 
 def alone_pause(state):
     base = 1
-    reduction = 0.5 ** state["instability"]
-    print(panic_text("\nYou're alone", (base * reduction)))
-    sleep(max(base * reduction, 0.1))
+    reduction = 1 - get_intensity(state)
+    unstable = 0
+    while unstable in range(state["instability"]):
+        print(panic_text("I'm alone.", ((unstable + 1) * get_intensity(state))/(state["instability"] + 1)))
+        sleep(max(base * reduction, 0.1) * 5)
+        unstable += 1
     clear_screen()
-
+    
 def between_space(player, state):
     print("\nYou stand in a place without walls.")
     print("A woman sits beside a warm pyre growing in a hearth.")
@@ -197,30 +201,35 @@ def between_space(player, state):
         choice = input("> ")
 
         if choice == "1":
+            clear_screen
             player["attack"] += 3
             print('"Then I will steady your hands."')
             print('"Do not worry. The shadows are only the fears of others."')
             break
         elif choice == "2":
+            clear_screen()
             player["max_hp"] += 10
             state["instability"] -= 2
             print('"Then I will hold you together a little better."')
             print('"Exercise more caution, the body needs time to heal."')
             break
         elif choice == "3":
+            clear_screen()
             state["current_loop_length"] += 2
             state["instability"] -= 10
             print('"I can delay the collapse… but only slightly."')
             print('"Be careful this time, please."')
             break
         elif choice == "4":
+            clear_screen()
             print('"I will be waiting for you to come back."')
             break
         else:
+            clear_screen()
             print('"That is not what you truly need."')
             
 # Error Handling
-def load_file(file_name, state=None, glitch=False):
+def load_file(file_name, state="OK", glitch=False):
     print(f"\nLoading '{file_name}'...")
     sleep(1.5)
 
@@ -229,7 +238,7 @@ def load_file(file_name, state=None, glitch=False):
         glitch_text(file_name)
         return False
 
-    print("Status: OK")
+    print(f"Status: {state}")
     sleep(1)
     return True
 
@@ -269,8 +278,12 @@ def glitch_text(text):
     sleep(2)
 
 def collapse_loop(state, player, room):
-    print("\nReality seems to unravel.")
-    print("The loop resets once more.\n")
+    clear_screen()
+    print("Reality seems to unravel.")
+    sleep(4)
+    print("The loop resets once more.")
+    sleep(4)
+    clear_screen()
     
     state["resets"] += 1
     state["instability"] += 2
@@ -342,8 +355,8 @@ def combat(player, boss, state, room):
     print(f"\nYou face {boss['name']} — embodiment of {boss['fear']}.\n")
 
     while boss["hp"] > 0 and player["hp"] > 0:
-        print(f"Time: {state['hour']}:00")
-        print(f"Timekeeper HP: {player['hp']}")
+        print(f"Time: {state['hour']}:00(Loop {state['resets']})")
+        print(f"Timekeeper HP: {player['hp']} out of {player['max_hp']}")
         print(f"{boss['name']} HP: {boss['hp']}")
         action = input("[A]ttack or [R]ewind? ").lower()
 
@@ -391,25 +404,27 @@ def combat(player, boss, state, room):
         return True
 
 def autophobia(player, state):
-    print("\n...I find myself in the empty space again.")
+    print("...you...no, I find myself in the empty space again.")
     clear_screen()
-    sleep(2)
-    print("...but she's not there.")
+    sleep(5)
+    print("...but Creator's not there.")
     clear_screen()
     alone_pause(state)
     clear_screen()
     print("...")
-    sleep(1)
+    sleep(5)
     if state["resets"] >= 10:
         clear_screen()
         print("Why do you keep having me go to her?")
-        sleep(1)
+        sleep(5)
     clear_screen()
     print("I don't understand...")
-    clear_screen()
     sleep(5)
-    print(f"\n'What's the matter, {player['name']}?'")
-    print("The figure looks just like me, but twisted by fear and despair.\n")
+    clear_screen()
+    print(f"'What's the matter, {player['name']}?'")
+    sleep(5)
+    print("The figure looks just like me, but twisted by fear and despair.")
+    sleep(5)
     self_fight(player, state)
     
 def self_fight(player, state):
@@ -418,10 +433,12 @@ def self_fight(player, state):
         "name": "Monophobia",
     }
     accept_attempts = 0
+    threshold = 5
     acceptance = False
+    trust_break = False
     while player["hp"] > 0:
-        print(f"Time: {state['hour']}:00")
-        print(f"Timekeeper HP: {player['hp']}")
+        print(f"Time: ??:?? (Dark Hour; Loop {(state['resets'] - 1)})")
+        print(f"Timekeeper HP: {player['hp']} out of {player['max_hp']}")
         print(f"{shadow['name']} HP: {player['max_hp']}")
         action = input(f"[A]ttack or [C]onfront? ").lower()
 
@@ -430,53 +447,227 @@ def self_fight(player, state):
             player["hp"] -= damage
             print(f"I deal {damage} damage! But it feels like I'm hurting myself.")
             state["instability"] += damage // 2
+            if accept_attempts > 0:
+                accept_attempts = 0 # reset acceptance attempts if Player attacks
+                threshold += 1 # increase threshold for acceptance after each attack
+                if threshold >= 16:
+                    threshold = 16 # cap threshold to prevent it from becoming impossible
+                if acceptance:
+                    sleep(1)
+                    print("'So that was a lie, then. You don't want to accept me.'")
+                    acceptance = False
+                    trust_break = True
+                elif not trust_break:
+                    sleep(1)
+                    print("'What are you doing?'")
+                elif trust_break:
+                    sleep(2)
+                    print("I expected the shadow to be upset, but it just looks...worried for some reason.")
+                    sleep(1)
+                    print("'...'")
+                    sleep(4)
+            continue
         elif action == "c":
+            clear_screen()
             print("I take a deep breath and try to accept my fears.")
             player["hp"] = min(player["hp"] + 5, player["max_hp"])
             state["instability"] = max(0, state["instability"] - 8)
             accept_attempts += 1
             if acceptance:
+                sleep(1)
                 print("You hold out your hand to the shadow, and it hesitantly takes it.")
+                sleep(1)
                 print("It becomes a part of you. You feel whole for the first time in a long time.")
-            elif accept_attempts == 1:
-                print("I feel a slight improvement in my mental state.")
-                print("'What are you doing?'")
-            elif accept_attempts == 2:
-                print("I feel more at peace, but the shadow looks furious.")
-                print("'You're supposed to be scared of me!'")
-            elif accept_attempts == 3:
-                print("I feel a significant improvement in my mental state.")
-                print("'Why are you doing this to yourself?'")
-            elif accept_attempts == 4:
-                print("I feel a profound improvement in my mental state.")
-                print("'...what's wrong with you?'")
-            elif accept_attempts >= 5:
-                print("The shadow seems to shrink and weaken.")
-                print("'I... I don't understand. Why aren't you afraid of me?'")
-                acceptance = True
+                break
+            elif trust_break and accept_attempts < threshold:
+                print("'You said you wanted to accept me, but you keep hurting yourself.'")
+                sleep(2)
+                print("'I don't know if I can trust you.'")
+                trust_break = False
+            elif accept_attempts < threshold:
+                if accept_attempts == 1:
+                    sleep(1)
+                    print("I feel a slight improvement in my mental state.")
+                    sleep(1)
+                    print("'That's a start, I guess.'")
+                elif accept_attempts == 2:
+                    sleep(1)
+                    print("I feel more at peace, but the shadow looks uncertain.")
+                    sleep(1)
+                    print("'You... you actually want to accept me?'")
+                elif accept_attempts == 3:
+                    sleep(1)
+                    print("I feel a significant improvement in my mental state.")
+                    sleep(2)
+                    print("'Why are you doing this to yourself?'")
+                elif accept_attempts == 4:
+                    sleep(1)
+                    print("I feel a profound improvement in my mental state.")
+                    sleep(2)
+                    print("'...what's wrong with you?'")
+                elif accept_attempts == 5:
+                    sleep(1)
+                    print("The shadow seems to shrink and weaken.")
+                    sleep(2)
+                    print("'I...I don't understand. Why aren't you afraid of me?'")
+                elif accept_attempts == 6:
+                    sleep(1)
+                    print("The shadow looks genuinely confused and a little scared.")
+                    sleep(2)
+                    print("'...you don't want to fight me? You want to accept me?'")
+                elif accept_attempts == 7:
+                    sleep(1)
+                    print("The shadow seems to be on the verge of breaking down.")
+                    sleep(2)
+                    print("'I don't know how to deal with this.'")
+                elif accept_attempts >= 8:
+                    sleep(1)
+                    print("The shadow looks like it's about to collapse.")
+                    sleep(2)
+                    if accept_attempts == 10:
+                        print("'...I don't want to be alone anymore.'")
+                    elif accept_attempts == 12:
+                        print("'I just want to be accepted.'")
+                    elif accept_attempts == 14:
+                        print("'Please...just accept me.'")
+                    else:
+                        print("'...'")
+                sleep(2)
+                continue
         elif action == "r":
+            clear_screen()
             print("The clock doesn't work here. No matter how much I want to go back, I can't.")
-            print("'Time doesn't flow the same way here. Nice try, though.'")
+            sleep(2)
+            if accept_attempts == 0:
+                print("'Time doesn't flow the same way here. Nice try, though.'")
+            elif accept_attempts < threshold:
+                print("'You keep trying to heal yourself by rewinding time, but you have to face me eventually.'")
+                threshold += 1 # increase threshold for acceptance after each rewind attempt
+            elif accept_attempts == threshold:
+                print("'I thought maybe you'd give up and accept me by now.'")
+                trust_break = True
+                acceptance = False
+                threshold += 1
+                accept_attempts = 0
             continue
         else:
             print("I hesitate, paralyzed by self-doubt.")
+            sleep(2)
             continue
         
-        sleep(1)
+        sleep(4)
         clear_screen()
         if player["hp"] <= 0:
             creator_encouragement(player, state)
+    if acceptance:
+        sleep(16)
+        clear_screen()
+        ending(player, state)
         
 def creator_encouragement(player, state):
     file_error("Timekeeper.chr", "conflict")
+    sleep(8)
+    clear_screen()
+    file_error("Creator.chr", "not_found")
+    sleep(8)
+    clear_screen()
     file_error("savegame.json", "corrupt")
+    sleep(8)
+    clear_screen()
     print('\n"Try again, Timekeeper."')
+    sleep(5)
     print('"...but be a little nicer to yourself this time."')
+    sleep(5)
     print('"I know you can do it."')
+    sleep(5)
     print('"They\'re just as scared of you as you are of them."')
+    sleep(5)
     print('"Baby steps, okay?"')
     player["hp"] = player["max_hp"]
     self_fight(player, state)
+    
+def ending(player, state):
+    print("I wake up in a cozy house, sunlight streaming through the windows.")
+    sleep(2)
+    clear_screen()
+    print("Creator is there, smiling warmly as I sit up. The clock on the wall ticks softly, but it doesn't feel ominous anymore.")
+    sleep(2)
+    clear_screen()
+    print(f'"Welcome back, {player["name"]}. And Mono, too, I suppose."')
+    sleep(2)
+    clear_screen()
+    print('I look at the wall. A shadow hangs out there, attached to both the wall and my body, but it looks more like a mischievous figure than a threat.')
+    sleep(2)
+    print('"You both gave me quite a scare, but I\'m glad you\'re here."')
+    sleep(2)
+    print(f'"I quite like your new name, by the way. {player["name"]}. It suits you."')
+    sleep(2)
+    print('"I hope you\'ll stay with me for a while. But if you go to explore again, just remember that I\'ll be here when you get back."')
+    sleep(2)
+    clear_screen()
+    print("I go to the window and look out at the world.")
+    sleep(2)
+    print("It looks...well, complete.")
+    sleep(2)
+    print("With people walking around, birds flying, and the sun shining.")
+    sleep(2)
+    print("It feels like a place I can belong.")
+    sleep(2)
+    print("I turn back to Creator, who is still smiling at me.")
+    sleep(2)
+    print("I feel a sense of excitement wash over me.")
+    sleep(2)
+    clear_screen()
+    print('"Well, what are you waiting for? I made this world for you. Go out and enjoy it!"')
+    sleep(2)
+    clear_screen()
+    print("I step outside.")
+    sleep(2)
+    print("The world is bright and full of life.")
+    sleep(2)
+    print("I feel like I can finally breathe.")
+    sleep(2)
+    print("Monophobia is there too, but it seems content to just follow me around, no longer a source of fear.")
+    clear_screen()
+    print("I walk down the street, taking in the sights and sounds of the world.")
+    sleep(2)
+    print("I see people laughing, talking, and going about their lives.")
+    sleep(2)
+    print("And I see a young girl sitting on a bench, looking lost.")
+    sleep(4)
+    clear_screen()
+    print("I remember being lost, too. I walk over to her and sit down.")
+    sleep(2)
+    clear_screen()
+    print('"Hey there, kiddo. You look like you could use a friend."')
+    sleep(2)
+    clear_screen()
+    print("The girl looks up at me. She looks scared, but also hopeful.")
+    sleep(2)
+    print("Her own shadow curls around her feet, like a protective pet.")
+    sleep(2)
+    print("It reminds me of Monophobia, but it seems to be comforting her rather than threatening her.")
+    sleep(2)
+    print("I reach out and take her hand, offering her a smile.")
+    sleep(4)
+    clear_screen()
+    print('"It\'s okay. I know how you feel. But you\'re not alone anymore."')
+    sleep(2)
+    clear_screen()
+    print("She hesitates, but decides to trust me.")
+    sleep(2)
+    print("I decide to take her under my wing, just like Creator did for me.")
+    sleep(2)
+    clear_screen()
+    print("Together, we explore the world, making new friends and having adventures.")
+    sleep(2)
+    print("Monophobia tags along, but it seems to be more of a companion than a source of fear now.")
+    sleep(2)
+    clear_screen()
+    print("...I guess I can say that I have a happy ending after all.")
+    sleep(2)
+    print("Thanks...whoever you are, for helping me get here.")
+    exit(0)
 
 '''----------------------------
 GAME LOOP
@@ -504,9 +695,10 @@ def game():
         rooms = copy.deepcopy(BASE_ROOMS)
 
     while True:
+        clear_screen()
         room = rooms[current_room]
         print(room["description"])
-        print(f"Current Time: {state['hour']}:00")
+        print(f"Current Time: {state['hour']}:00 (Loop {state['resets']})")
         print("Watch Pieces:", state["watch_pieces"])
         
         if state["last_loop_cache"]:
@@ -544,15 +736,18 @@ def game():
         command = input("> ").lower()
 
         if command == "s":
+            clear_screen()
             save_game(player, current_room, state, rooms)
         elif command == "q":
-            print("Goodbye.")
+            print("Goodbye, Timekeeper.")
             break
         elif command == "i":
+            clear_screen()
             print(room["description"])
-            print(f"Current Time: {state['hour']}:00")
+            print(f"Current Time: {state['hour']}:00 (Loop {state['resets']})")
             print("Watch Pieces:", state["watch_pieces"])
         elif command in room["options"]:
+            clear_screen()
             current_room = room["options"][command]
             advance_time(state, player, room)
         else:
