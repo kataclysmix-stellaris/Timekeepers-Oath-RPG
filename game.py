@@ -149,8 +149,8 @@ def panic_words(text, intensity=0.5):
 
     return " ".join(result)
 
-def panic_break_text(text):
-    attempts = get_intensity
+def panic_break_text(text, state):
+    attempts = get_intensity(state)
 
     intensity = min(0.2 + attempts * 0.2, 0.9)
     break_chance = min(0.2 + attempts * 0.2, 0.8)
@@ -457,15 +457,20 @@ def self_fight(player, state):
                     print("'So that was a lie, then. You don't want to accept me.'")
                     acceptance = False
                     trust_break = True
+                    sleep(2)
+                    clear_screen()
                 elif not trust_break:
                     sleep(1)
                     print("'What are you doing?'")
+                    sleep(2)
+                    clear_screen()
                 elif trust_break:
                     sleep(2)
                     print("I expected the shadow to be upset, but it just looks...worried for some reason.")
                     sleep(1)
                     print("'...'")
                     sleep(4)
+                    clear_screen()
             continue
         elif action == "c":
             clear_screen()
@@ -533,7 +538,6 @@ def self_fight(player, state):
                     else:
                         print("'...'")
                 sleep(2)
-                continue
         elif action == "r":
             clear_screen()
             print("The clock doesn't work here. No matter how much I want to go back, I can't.")
@@ -559,6 +563,7 @@ def self_fight(player, state):
         clear_screen()
         if player["hp"] <= 0:
             creator_encouragement(player, state)
+    
     if acceptance:
         sleep(16)
         clear_screen()
