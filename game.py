@@ -480,9 +480,9 @@ def self_fight(player, state):
             accept_attempts += 1
             if acceptance:
                 sleep(1)
-                print("You hold out your hand to the shadow, and it hesitantly takes it.")
+                print("I hold out my hand to the shadow, and it hesitantly takes it.")
                 sleep(1)
-                print("It becomes a part of you. You feel whole for the first time in a long time.")
+                print("It becomes a part of me. I feel whole for the first time.")
                 break
             if accept_attempts >= threshold and not acceptance:
                 sleep(1)
