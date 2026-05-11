@@ -495,37 +495,37 @@ def self_fight(player, state):
                     print("I feel a slight improvement in my mental state.")
                     sleep(1)
                     print("'That's a start, I guess.'")
-                elif accept_attempts == 2:
+                if accept_attempts == 2:
                     sleep(1)
                     print("I feel more at peace, but the shadow looks uncertain.")
                     sleep(1)
                     print("'You... you actually want to accept me?'")
-                elif accept_attempts == 3:
+                if accept_attempts == 3:
                     sleep(1)
                     print("I feel a significant improvement in my mental state.")
                     sleep(2)
                     print("'Why are you doing this to yourself?'")
-                elif accept_attempts == 4:
+                if accept_attempts == 4:
                     sleep(1)
                     print("I feel a profound improvement in my mental state.")
                     sleep(2)
                     print("'...what's wrong with you?'")
-                elif accept_attempts == 5:
+                if accept_attempts == 5:
                     sleep(1)
                     print("The shadow seems to shrink and weaken.")
                     sleep(2)
                     print("'I...I don't understand. Why aren't you afraid of me?'")
-                elif accept_attempts == 6:
+                if accept_attempts == 6:
                     sleep(1)
                     print("The shadow looks genuinely confused and a little scared.")
                     sleep(2)
                     print("'...you don't want to fight me? You want to accept me?'")
-                elif accept_attempts == 7:
+                if accept_attempts == 7:
                     sleep(1)
                     print("The shadow seems to be on the verge of breaking down.")
                     sleep(2)
                     print("'I don't know how to deal with this.'")
-                elif accept_attempts >= 8:
+                if accept_attempts >= 8:
                     sleep(1)
                     print("The shadow looks like it's about to collapse.")
                     sleep(2)
