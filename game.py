@@ -484,6 +484,12 @@ def self_fight(player, state):
                 sleep(1)
                 print("It becomes a part of you. You feel whole for the first time in a long time.")
                 break
+            if accept_attempts >= threshold and not acceptance:
+                sleep(1)
+                print("The shadow looks at you with a mix of surprise and relief.")
+                sleep(1)
+                print("'You... you actually want to accept me?'")
+                acceptance = True
             elif trust_break and accept_attempts < threshold:
                 print("'You said you wanted to accept me, but you keep hurting yourself.'")
                 sleep(2)
@@ -499,7 +505,7 @@ def self_fight(player, state):
                     sleep(1)
                     print("I feel more at peace, but the shadow looks uncertain.")
                     sleep(1)
-                    print("'You... you actually want to accept me?'")
+                    print("'...are you sure about this?'")
                 if accept_attempts == 3:
                     sleep(1)
                     print("I feel a significant improvement in my mental state.")
@@ -510,33 +516,34 @@ def self_fight(player, state):
                     print("I feel a profound improvement in my mental state.")
                     sleep(2)
                     print("'...what's wrong with you?'")
-                if accept_attempts == 5:
-                    sleep(1)
-                    print("The shadow seems to shrink and weaken.")
-                    sleep(2)
-                    print("'I...I don't understand. Why aren't you afraid of me?'")
-                if accept_attempts == 6:
-                    sleep(1)
-                    print("The shadow looks genuinely confused and a little scared.")
-                    sleep(2)
-                    print("'...you don't want to fight me? You want to accept me?'")
-                if accept_attempts == 7:
-                    sleep(1)
-                    print("The shadow seems to be on the verge of breaking down.")
-                    sleep(2)
-                    print("'I don't know how to deal with this.'")
-                if accept_attempts >= 8:
-                    sleep(1)
-                    print("The shadow looks like it's about to collapse.")
-                    sleep(2)
-                    if accept_attempts == 10:
-                        print("'...I don't want to be alone anymore.'")
-                    elif accept_attempts == 12:
-                        print("'I just want to be accepted.'")
-                    elif accept_attempts == 14:
-                        print("'Please...just accept me.'")
-                    else:
-                        print("'...'")
+                if accept_attempts >= 5:
+                    if accept_attempts == 5:
+                        sleep(1)
+                        print("The shadow seems to shrink and weaken.")
+                        sleep(2)
+                        print("'I...I don't understand. Why aren't you afraid of me?'")
+                    if accept_attempts == 6:
+                        sleep(1)
+                        print("The shadow looks genuinely confused and a little scared.")
+                        sleep(2)
+                        print("'...you don't want to fight me? You want to accept me?'")
+                    if accept_attempts == 7:
+                        sleep(1)
+                        print("The shadow seems to be on the verge of breaking down.")
+                        sleep(2)
+                        print("'I don't know how to deal with this.'")
+                    if accept_attempts >= 8:
+                        sleep(1)
+                        print("The shadow looks like it's about to collapse.")
+                        sleep(2)
+                        if accept_attempts == 10:
+                            print("'...I don't want to be alone anymore.'")
+                        elif accept_attempts == 12:
+                            print("'I just want to be accepted.'")
+                        elif accept_attempts == 14:
+                            print("'Please...just accept me.'")
+                        else:
+                            print("'...'")
                 sleep(2)
         elif action == "r":
             clear_screen()
