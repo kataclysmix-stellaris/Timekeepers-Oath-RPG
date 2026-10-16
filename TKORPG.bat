@@ -1,3 +1,5 @@
 @echo off
-python "C:\Users\kbowersox\Desktop\Timekeeper's Oath RPG Build alpha-0.0.04\game.py"
+cd /d "%~dp0"
+py -3 game.py
+if errorlevel 1 python game.py
 pause
