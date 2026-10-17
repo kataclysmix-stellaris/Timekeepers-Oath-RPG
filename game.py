@@ -1416,7 +1416,7 @@ def game():
             if current_room == "town":
                 town_cat(player, state)
             else:
-                print("What cat. There is no cat.")
+                print("What cat? There is no cat.")
         elif command == "h":
             print("Choose a listed direction to travel; each move advances time.")
             print("Defeat the three fears to assemble the watch. Use [M]ap and [J]ournal to review progress.")
